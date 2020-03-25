@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.app.sms.retrieval.model.SmsReceiveDao
 import com.app.sms.retrieval.utils.SmsServiceManager.sendSMS
+import com.app.sms.retrieval.utils.dolphinKey
 import com.app.sms.retrieval.utils.hideKeyboard
 import com.app.sms.retrieval.utils.init
 import com.karumi.dexter.Dexter
@@ -33,7 +34,6 @@ class MainActivity : AppCompatActivity(), MessageAdapter.Listener {
 
     val RECEIVED_SMS_FLAG = "SMS_RECEIVED"
     var adapter: MessageAdapter? = null
-
 
     val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -71,11 +71,29 @@ class MainActivity : AppCompatActivity(), MessageAdapter.Listener {
 
     fun initView(){
         rvMessage.init()
+        val dpKey = Hawk.get("dolphinKey", true)
+        toggleKey.setToggleOn()
         edtPhoneNo.setText("0972947756")
-        edtMessage.setText(getJson())
+        toggleKey.setOnToggleChanged {
+            if(it){
+                Hawk.put("dolphinKey", true)
+                Toast.makeText(
+                    this@MainActivity,
+                    "Dolphin key is ON",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }else{
+                Hawk.put("dolphinKey", false)
+                Toast.makeText(
+                    this@MainActivity,
+                    "Dolphin key is OFF",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
         btnSendMessage.setOnClickListener {
             hideKeyboard()
-            sendSMS(this, edtPhoneNo.text.toString(), edtMessage.text.toString())
+            sendSMS(this, edtPhoneNo.text.toString(), edtMessage.text.toString().dolphinKey())
             edtMessage.text.clear()
         }
         adapter = MessageAdapter(mutableListOf(), this).apply { rvMessage.adapter = this }

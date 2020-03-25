@@ -10,6 +10,7 @@ import com.app.sms.retrieval.MainActivity
 import com.app.sms.retrieval.R
 import com.app.sms.retrieval.model.SmsReceiveDao
 import com.app.sms.retrieval.utils.SystemCipherSecurity
+import com.app.sms.retrieval.utils.compareDolphinKey
 import com.application.isradeleon.notify.Notify
 import com.orhanobut.hawk.Hawk
 import java.lang.Exception
@@ -46,45 +47,14 @@ class SMSReceiver : BroadcastReceiver() {
             }
 
             //INSERT TO HAWL
-            try {
-                val currentTimestamp = System.currentTimeMillis()
-                var smsReceiveHawl: MutableList<SmsReceiveDao>? = Hawk.get("smsReceiveDao")
-                if (smsReceiveHawl == null) {
-                    smsReceiveHawl = mutableListOf()
+            val dpKey = Hawk.get("dolphinKey", true)
+            if(dpKey == true){
+                if(smsBody.compareDolphinKey()){
+                    saveReceiver(context,smsSender,smsBody)
                 }
-                smsReceiveHawl.add(
-                    SmsReceiveDao(
-                        smsSender = smsSender,
-                        smsMessage = SystemCipherSecurity.decipher(smsBody),
-                        smsReceiveTime = currentTimestamp
-                    )
-                )
-                Hawk.put("smsReceiveDao", smsReceiveHawl)
-            } catch (e: Exception) {
-                e.printStackTrace()
+            }else{
+                saveReceiver(context,smsSender,smsBody)
             }
-            
-
-            Notify.create(context)
-                .setTitle(smsSender)
-                .setContent(smsBody)
-                .setImportance(Notify.NotificationImportance.MAX)
-                .setSmallIcon(R.drawable.ic_sms_black_24dp)
-                .setColor(R.color.colorPrimary)
-                .setAction(Intent(context, MainActivity::class.java))
-                .circleLargeIcon()
-                .show(); // Finally showing the notification
-
-
-            //var settingsManager = SettingsManager(context)
-
-            //  PostReceivedMessage().execute(settingsManager.receiveURL, settingsManager.deviceId, smsBody, smsSender)
-
-            val i = Intent("SMS_RECEIVED")
-            i.putExtra("number", smsSender)
-            i.putExtra("message", smsBody)
-            context.sendBroadcast(i)
-
             if (::serviceProviderNumber.isInitialized && smsSender == serviceProviderNumber && smsBody.startsWith(
                     serviceProviderSmsCondition
                 )
@@ -101,5 +71,43 @@ class SMSReceiver : BroadcastReceiver() {
         fun onTextReceived(text: String)
     }
 
+    fun saveReceiver(context: Context,smsSender : String, smsBody : String){
+        try {
+            val currentTimestamp = System.currentTimeMillis()
+            var smsReceiveHawl: MutableList<SmsReceiveDao>? = Hawk.get("smsReceiveDao")
+            if (smsReceiveHawl == null) {
+                smsReceiveHawl = mutableListOf()
+            }
+            smsReceiveHawl.add(
+                SmsReceiveDao(
+                    smsSender = smsSender,
+                    smsMessage = smsBody,
+                    smsReceiveTime = currentTimestamp
+                )
+            )
+            Hawk.put("smsReceiveDao", smsReceiveHawl)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+
+        Notify.create(context)
+            .setTitle(smsSender)
+            .setContent(smsBody)
+            .setImportance(Notify.NotificationImportance.MAX)
+            .setSmallIcon(R.drawable.ic_sms_black_24dp)
+            .setColor(R.color.colorPrimary)
+            .setAction(Intent(context, MainActivity::class.java))
+            .circleLargeIcon()
+            .show(); // Finally showing the notification
+
+        //var settingsManager = SettingsManager(context)
+        //  PostReceivedMessage().execute(settingsManager.receiveURL, settingsManager.deviceId, smsBody, smsSender)
+
+        val i = Intent("SMS_RECEIVED")
+        i.putExtra("number", smsSender)
+        i.putExtra("message", smsBody)
+        context.sendBroadcast(i)
+    }
 
 }
