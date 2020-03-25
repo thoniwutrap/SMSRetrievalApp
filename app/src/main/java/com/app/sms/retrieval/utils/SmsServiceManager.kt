@@ -15,18 +15,16 @@ object SmsServiceManager {
     fun sendSMS(context: Context, phoneNumber: String, message: String){
 
         if(phoneNumber.isEmpty() || message.isEmpty()){
-            Toast.makeText(context,"Phone# and Message are required fields", Toast.LENGTH_LONG).show()
+            Toast.makeText(context,"Please enter phone number or message.", Toast.LENGTH_LONG).show()
         }else{
 
-            Toast.makeText(context,"encrypting message...", Toast.LENGTH_SHORT).show()
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            var newMessage = SystemCipherSecurity.cipher(message)
             val smsMgr: SmsManager = SmsManager.getDefault()
-
+            var multipleSMS: ArrayList<String> = ArrayList()
+            Toast.makeText(context, newMessage, Toast.LENGTH_SHORT).show()
             try {
-
                 val SENT = "SMS_SENT"
                 val sentPI = PendingIntent.getBroadcast(context, 0, Intent(SENT), 0)
-
                 context.registerReceiver(object : BroadcastReceiver() {
                     override fun onReceive(arg0: Context, arg1: Intent) {
                         val resultCode = resultCode
@@ -60,7 +58,9 @@ object SmsServiceManager {
                     }
                 }, IntentFilter(SENT))
 
-                smsMgr.sendTextMessage(phoneNumber, null, message, sentPI, null)
+                multipleSMS = smsMgr.divideMessage(newMessage)
+                smsMgr.sendMultipartTextMessage(phoneNumber, null, multipleSMS, null, null)
+              //  smsMgr.sendTextMessage(phoneNumber, null, message, sentPI, null)
 
             }
             catch (e: Exception) {

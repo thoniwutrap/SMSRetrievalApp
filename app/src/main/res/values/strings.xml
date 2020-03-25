@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">SmsRetrievalApp</string>
+    <string name="notify_channel_id">99999</string>
+    <string name="notify_channel_name">SmsRetrievalApp</string>
+    <string name="notify_channel_description">SMSReceiver</string>
 </resources>

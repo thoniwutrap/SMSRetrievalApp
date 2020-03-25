@@ -1,18 +1,17 @@
 package com.app.sms.retrieval.service
 
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Telephony
 import android.telephony.SmsMessage
-import android.util.Log
-import android.util.Log.e
 import com.app.sms.retrieval.MainActivity
+import com.app.sms.retrieval.R
 import com.app.sms.retrieval.model.SmsReceiveDao
+import com.app.sms.retrieval.utils.SystemCipherSecurity
+import com.application.isradeleon.notify.Notify
 import com.orhanobut.hawk.Hawk
-import io.karn.notify.Notify
 import java.lang.Exception
 
 
@@ -56,7 +55,7 @@ class SMSReceiver : BroadcastReceiver() {
                 smsReceiveHawl.add(
                     SmsReceiveDao(
                         smsSender = smsSender,
-                        smsMessage = smsBody,
+                        smsMessage = SystemCipherSecurity.decipher(smsBody),
                         smsReceiveTime = currentTimestamp
                     )
                 )
@@ -64,18 +63,17 @@ class SMSReceiver : BroadcastReceiver() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+            
 
-
-            Notify
-                .with(context)
-                .meta { // this: Payload.Meta
-                    clickIntent = PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java), 0)
-                }
-                .content {
-                    title = smsSender
-                    text = smsBody
-                }
-                .show()
+            Notify.create(context)
+                .setTitle(smsSender)
+                .setContent(smsBody)
+                .setImportance(Notify.NotificationImportance.MAX)
+                .setSmallIcon(R.drawable.ic_sms_black_24dp)
+                .setColor(R.color.colorPrimary)
+                .setAction(Intent(context, MainActivity::class.java))
+                .circleLargeIcon()
+                .show(); // Finally showing the notification
 
 
             //var settingsManager = SettingsManager(context)
@@ -102,4 +100,6 @@ class SMSReceiver : BroadcastReceiver() {
     internal interface Listener {
         fun onTextReceived(text: String)
     }
+
+
 }
