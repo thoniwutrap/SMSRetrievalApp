@@ -137,28 +137,87 @@
      </com.zcw.togglebutton.ToggleButton>
 
 
-     <TextView
-         android:background="@color/colorPrimary"
-         android:id="@+id/txtSMSTitle"
+     <LinearLayout
+         android:layout_marginTop="20dp"
          app:layout_constraintStart_toStartOf="parent"
-          android:layout_marginTop="20dp"
-          app:layout_constraintTop_toBottomOf="@id/toggleKey"
-         android:layout_width="match_parent"
-         android:layout_height="wrap_content"
-          android:textColor="@color/white"
-          android:textSize="18dp"
-         android:textStyle="bold"
-         android:padding="10dp"
-          android:text="SMS RECEIVE" />
-
-
-     <androidx.recyclerview.widget.RecyclerView
-         android:id="@+id/rvMessage"
-         android:layout_width="match_parent"
-         android:layout_height="0dp"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintTop_toBottomOf="@id/toggleKey"
          app:layout_constraintBottom_toBottomOf="parent"
-         app:layout_constraintTop_toBottomOf="@id/txtSMSTitle"
-         tools:layout_editor_absoluteX="0dp" />
+         android:layout_width="match_parent"
+         android:layout_height="0dp">
+
+          <androidx.constraintlayout.widget.ConstraintLayout
+              android:layout_weight="1"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+               <TextView
+                   android:background="@color/colorPrimary"
+                   android:id="@+id/txtSMSSendTitle"
+                   app:layout_constraintTop_toTopOf="parent"
+                   app:layout_constraintStart_toStartOf="parent"
+                   app:layout_constraintEnd_toEndOf="parent"
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:textColor="@color/white"
+                   android:textSize="16dp"
+                   android:textStyle="bold"
+                   android:padding="10dp"
+                   android:text="SMS SEND" />
+
+
+               <androidx.recyclerview.widget.RecyclerView
+                   tools:listitem="@layout/list_item_msg"
+                   android:id="@+id/rvMessageSend"
+                   android:layout_width="match_parent"
+                   android:layout_height="0dp"
+                   app:layout_constraintBottom_toBottomOf="parent"
+                   app:layout_constraintTop_toBottomOf="@id/txtSMSSendTitle"
+                   tools:layout_editor_absoluteX="0dp" />
+
+          </androidx.constraintlayout.widget.ConstraintLayout>
+
+          <View
+              android:layout_width="1dp"
+              android:layout_height="match_parent"
+               android:background="@color/light_grey">
+
+          </View>
+          <androidx.constraintlayout.widget.ConstraintLayout
+              android:layout_weight="1"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+               <TextView
+                   android:background="@color/colorPrimary"
+                   android:id="@+id/txtSMSRecieveTitle"
+                   app:layout_constraintTop_toTopOf="parent"
+                   app:layout_constraintStart_toStartOf="parent"
+                   app:layout_constraintEnd_toEndOf="parent"
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:textColor="@color/white"
+                   android:textSize="16dp"
+                   android:textStyle="bold"
+                   android:padding="10dp"
+                   android:text="SMS RECEIVE" />
+
+
+               <androidx.recyclerview.widget.RecyclerView
+                   tools:listitem="@layout/list_item_msg"
+                   android:id="@+id/rvMessageReceive"
+                   android:layout_width="match_parent"
+                   android:layout_height="0dp"
+                   app:layout_constraintBottom_toBottomOf="parent"
+                   app:layout_constraintTop_toBottomOf="@id/txtSMSRecieveTitle"
+                   tools:layout_editor_absoluteX="0dp" />
+
+          </androidx.constraintlayout.widget.ConstraintLayout>
+
+     </LinearLayout>
+
+
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,12 +6,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
-import android.webkit.PermissionRequest
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.app.sms.retrieval.model.SmsReceiveDao
+import com.app.sms.retrieval.utils.SmsServiceManager
 import com.app.sms.retrieval.utils.SmsServiceManager.sendSMS
 import com.app.sms.retrieval.utils.dolphinKey
 import com.app.sms.retrieval.utils.hideKeyboard
@@ -19,10 +18,7 @@ import com.app.sms.retrieval.utils.init
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
-import com.karumi.dexter.listener.PermissionDeniedResponse
-import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
-import com.karumi.dexter.listener.single.PermissionListener
 import com.orhanobut.hawk.Hawk
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
@@ -30,21 +26,28 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class MainActivity : AppCompatActivity(), MessageAdapter.Listener {
+class MainActivity : AppCompatActivity(), MessageAdapter.Listener{
 
-    val RECEIVED_SMS_FLAG = "SMS_RECEIVED"
-    var adapter: MessageAdapter? = null
+    val SMS_FLAG = "SMS"
+    var adapterSender: MessageAdapter? = null
+    var adapterReceiver: MessageAdapter? = null
 
     val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             intent.flags
             val bundle = intent.extras
+            val type = bundle?.getString("type")
             val number = bundle?.getString("number")
             val message = bundle?.getString("message")
             Log.e("MESSAGE", "Message received from: $number - msg: $message")
-            adapter?.updateMsg(Hawk.get("smsReceiveDao"))
+            if(type == "SEND"){
+                adapterSender?.updateMsg(Hawk.get("smsSenderDao"))
+            }else{
+                adapterReceiver?.updateMsg(Hawk.get("smsReceiveDao"))
+            }
         }
     }
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +59,8 @@ class MainActivity : AppCompatActivity(), MessageAdapter.Listener {
 
     override fun onResume() {
         super.onResume()
-        adapter?.updateMsg(Hawk.get("smsReceiveDao"))
+        adapterSender?.updateMsg(Hawk.get("smsSenderDao"))
+        adapterReceiver?.updateMsg(Hawk.get("smsReceiveDao"))
     }
 
 
@@ -70,7 +74,8 @@ class MainActivity : AppCompatActivity(), MessageAdapter.Listener {
 
 
     fun initView(){
-        rvMessage.init()
+        rvMessageSend.init()
+        rvMessageReceive.init()
         val dpKey = Hawk.get("dolphinKey", true)
         toggleKey.setToggleOn()
         edtPhoneNo.setText("0972947756")
@@ -96,7 +101,12 @@ class MainActivity : AppCompatActivity(), MessageAdapter.Listener {
             sendSMS(this, edtPhoneNo.text.toString(), edtMessage.text.toString().dolphinKey())
             edtMessage.text.clear()
         }
-        adapter = MessageAdapter(mutableListOf(), this).apply { rvMessage.adapter = this }
+        adapterSender = MessageAdapter(mutableListOf(), this).apply {
+            rvMessageSend.adapter = this
+        }
+        adapterReceiver = MessageAdapter(mutableListOf(), this).apply {
+            rvMessageReceive.adapter = this
+        }
     }
 
 
@@ -134,7 +144,7 @@ class MainActivity : AppCompatActivity(), MessageAdapter.Listener {
                 override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
                     report?.let {
                         if (report.areAllPermissionsGranted()) {
-                            registerReceiver(broadcastReceiver, IntentFilter(RECEIVED_SMS_FLAG))
+                            registerReceiver(broadcastReceiver, IntentFilter(SMS_FLAG))
                         } else {
                             finish()
                             Toast.makeText(
