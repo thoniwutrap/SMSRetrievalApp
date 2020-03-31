@@ -4,7 +4,7 @@ import com.orhanobut.hawk.Hawk
 
 internal fun String.dolphinKey() : String {
     return if(Hawk.get("dolphinKey", true)){
-        "DPSMS: $this"
+        "DPSMS$this"
     }else{
         this
     }

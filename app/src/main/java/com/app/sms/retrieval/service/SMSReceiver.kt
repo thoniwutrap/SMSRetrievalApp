@@ -9,7 +9,6 @@ import android.telephony.SmsMessage
 import com.app.sms.retrieval.MainActivity
 import com.app.sms.retrieval.R
 import com.app.sms.retrieval.model.SmsReceiveDao
-import com.app.sms.retrieval.utils.SystemCipherSecurity
 import com.app.sms.retrieval.utils.compareDolphinKey
 import com.application.isradeleon.notify.Notify
 import com.orhanobut.hawk.Hawk

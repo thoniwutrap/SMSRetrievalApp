@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity(), MessageAdapter.Listener{
     fun initView(){
         rvMessageSend.init()
         rvMessageReceive.init()
-        val dpKey = Hawk.get("dolphinKey", true)
+        Hawk.put("dolphinKey", true)
         toggleKey.setToggleOn()
         edtPhoneNo.setText("0972947756")
         toggleKey.setOnToggleChanged {
@@ -98,8 +98,11 @@ class MainActivity : AppCompatActivity(), MessageAdapter.Listener{
         }
         btnSendMessage.setOnClickListener {
             hideKeyboard()
-            sendSMS(this, edtPhoneNo.text.toString(), edtMessage.text.toString().dolphinKey())
-            edtMessage.text.clear()
+            val msgSend = "${edtMessageApiId.text}${edtMessageRequestId.text}${edtMessageData.text}"
+            sendSMS(this, edtPhoneNo.text.toString(), msgSend.dolphinKey())
+            edtMessageApiId.text.clear()
+            edtMessageRequestId.text.clear()
+            edtMessageData.text.clear()
         }
         adapterSender = MessageAdapter(mutableListOf(), this).apply {
             rvMessageSend.adapter = this
@@ -109,29 +112,6 @@ class MainActivity : AppCompatActivity(), MessageAdapter.Listener{
         }
     }
 
-
-
-    fun getJson() : String{
-
-        val sdf = SimpleDateFormat("MM/dd/yyyy hh:mm:ss")
-        val currentDate = sdf.format(Date())
-
-        var jsonReceived = JSONObject()
-        jsonReceived.put("id", Random().nextInt(10001))
-        jsonReceived.put("action", "Pick Up")
-        jsonReceived.put("type", "critical")
-        jsonReceived.put("time", currentDate)
-        jsonReceived.put("status", "Incomplete")
-        jsonReceived.put("reason", "Service connection failure")
-        jsonReceived.put("username", "albert")
-        jsonReceived.put("run", "CIT123")
-        //jsonReceived.put("user_description", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.")
-        //2 SMS -> encripted -> 4 SMS
-        //3 SMS -> encripted -> 8 SMS
-
-        return jsonReceived.toString()
-
-    }
 
     fun requestPermission() {
         Dexter.withActivity(this)
