@@ -1,6 +1,7 @@
 package com.app.sms.retrieval.service
 
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -10,6 +11,8 @@ import com.app.sms.retrieval.MainActivity
 import com.app.sms.retrieval.R
 import com.app.sms.retrieval.model.SmsReceiveDao
 import com.app.sms.retrieval.utils.compareDolphinKey
+import com.app.sms.retrieval.utils.datetimeNow
+import com.app.sms.retrieval.utils.deleteDolphinKey
 import com.application.isradeleon.notify.Notify
 import com.orhanobut.hawk.Hawk
 import java.lang.Exception
@@ -17,11 +20,15 @@ import java.lang.Exception
 
 class SMSReceiver : BroadcastReceiver() {
 
-
-    private var TAG = "SmsBroadcastReceiver"
     lateinit var serviceProviderNumber: String
     lateinit var serviceProviderSmsCondition: String
     private var listener: Listener? = null
+
+
+    internal interface Listener {
+        fun onTextReceived(text: String)
+    }
+
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Telephony.Sms.Intents.SMS_RECEIVED_ACTION) {
@@ -45,14 +52,8 @@ class SMSReceiver : BroadcastReceiver() {
                 }
             }
 
-            //INSERT TO HAWL
-            val dpKey = Hawk.get("dolphinKey", true)
-            if(dpKey == true){
-                if(smsBody.compareDolphinKey()){
-                    saveReceiver(context,smsSender,smsBody)
-                }
-            }else{
-                saveReceiver(context,smsSender,smsBody)
+            if(smsBody.compareDolphinKey()) {
+                saveReceiver(context, smsSender, smsBody)
             }
             if (::serviceProviderNumber.isInitialized && smsSender == serviceProviderNumber && smsBody.startsWith(
                     serviceProviderSmsCondition
@@ -65,30 +66,7 @@ class SMSReceiver : BroadcastReceiver() {
         }
     }
 
-
-    internal interface Listener {
-        fun onTextReceived(text: String)
-    }
-
     fun saveReceiver(context: Context,smsSender : String, smsBody : String){
-        try {
-            val currentTimestamp = System.currentTimeMillis()
-            var smsReceiveHawl: MutableList<SmsReceiveDao>? = Hawk.get("smsReceiveDao")
-            if (smsReceiveHawl == null) {
-                smsReceiveHawl = mutableListOf()
-            }
-            smsReceiveHawl.add(
-                SmsReceiveDao(
-                    smsSender = smsSender,
-                    smsMessage = smsBody,
-                    smsReceiveTime = currentTimestamp
-                )
-            )
-            Hawk.put("smsReceiveDao", smsReceiveHawl)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
 
         Notify.create(context)
             .setTitle(smsSender)
@@ -98,16 +76,15 @@ class SMSReceiver : BroadcastReceiver() {
             .setColor(R.color.colorPrimary)
             .setAction(Intent(context, MainActivity::class.java))
             .circleLargeIcon()
-            .show(); // Finally showing the notification
+            .show();
 
-        //var settingsManager = SettingsManager(context)
-        //  PostReceivedMessage().execute(settingsManager.receiveURL, settingsManager.deviceId, smsBody, smsSender)
-
-        val i = Intent("SMS")
-        i.putExtra("type", "RECEIVE")
-        i.putExtra("number", smsSender)
-        i.putExtra("message", smsBody)
-        context.sendBroadcast(i)
+        val intent =  Intent("Updated");
+        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        intent.component = ComponentName(context.getString(R.string.package_name_dolphin), context.getString(R.string.package_name_dolphin_receiver))
+        intent.putExtra("phoneNo", smsSender)
+        intent.putExtra("msg", smsBody.deleteDolphinKey())
+        intent.putExtra("time", datetimeNow())
+        context.sendBroadcast(intent);
     }
 
 }

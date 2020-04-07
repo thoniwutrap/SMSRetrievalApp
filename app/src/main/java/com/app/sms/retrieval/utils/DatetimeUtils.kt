@@ -15,3 +15,8 @@ internal fun Long.datetime(): String {
         ""
     }
 }
+
+
+fun datetimeNow() : Long{
+    return System.currentTimeMillis()
+}

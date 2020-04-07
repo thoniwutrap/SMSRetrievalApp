@@ -3,4 +3,6 @@
     <string name="notify_channel_id">99999</string>
     <string name="notify_channel_name">SmsRetrievalApp</string>
     <string name="notify_channel_description">SMSReceiver</string>
+    <string name="package_name_dolphin" translatable="false">com.app.ui.dolphin.main</string>
+    <string name="package_name_dolphin_receiver" translatable="false">com.app.ui.dolphin.main.ReceiverFromSmsAppBroadcast</string>
 </resources>

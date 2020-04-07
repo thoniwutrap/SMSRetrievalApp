@@ -13,3 +13,8 @@ internal fun String.dolphinKey() : String {
 internal fun String.compareDolphinKey() : Boolean {
     return this.contains("DPSMS",true)
 }
+
+
+internal fun String.deleteDolphinKey() : String {
+    return this.replace("DPSMS","").trim()
+}
